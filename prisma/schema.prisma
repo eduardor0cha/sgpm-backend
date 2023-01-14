@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  cpf            String     @id
+  username       String     @unique
+  email          String     @unique
+  password       String
+  name           String
+  gender         String
+  phoneNumber    String?    @unique
+  street         String?
+  number         String?
+  postalCode     String
+  district       String?
+  stateId        Int
+  state          String
+  stateAcronym   String
+  cityId         Int
+  city           String
+  profilePicPath String
+  isActive       Boolean    @default(true)
+  createAt       DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  medic          Medic?
+  moderador      Moderator?
+}
+
+model Moderator {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [cpf], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Medic {
+  userId           String        @id
+  crm              String        @unique
+  specialty        String
+  user             User          @relation(fields: [userId], references: [cpf], onDelete: Cascade, onUpdate: Cascade)
+  duties           Duty[]
+  swapRequests     SwapRequest[] @relation("SwapRequests")
+  receivedSwapReqs SwapRequest[] @relation("ReceivedSwapReqs")
+  sentMessages     Message[]     @relation("SentMessages")
+  receiverMessages Message[]     @relation("ReceivedMessages")
+}
+
+model Duty {
+  id           Int           @id @default(autoincrement())
+  date         DateTime
+  workload     Int
+  startingTime DateTime
+  accepted     Boolean
+  concluded    Boolean
+  createAt     DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  medicId      String
+  medic        Medic         @relation(fields: [medicId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  swapReqs     SwapRequest[] @relation("SwapReqs")
+  swapOffer    SwapRequest[] @relation("SwapOffers")
+}
+
+model SwapRequest {
+  id            Int      @id @default(autoincrement())
+  complainantId String
+  respondentId  String
+  dutyId1       Int
+  dutyId2       Int
+  accepted      Boolean
+  createAt      DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  complainant   Medic    @relation("SwapRequests", fields: [complainantId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  respondent    Medic    @relation("ReceivedSwapReqs", fields: [respondentId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  duty1         Duty     @relation("SwapReqs", fields: [dutyId1], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  duty2         Duty     @relation("SwapOffers", fields: [dutyId2], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Publication {
+  id        Int      @id @default(autoincrement())
+  authorId  String
+  content   String
+  isActive  Boolean  @default(true)
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post?
+  reply     Reply?
+}
+
+model Post {
+  publicationId Int         @id
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  replies       Reply[]
+}
+
+model Reply {
+  publicationId Int         @id
+  postId        Int
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  post          Post        @relation(fields: [postId], references: [publicationId], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   String
+  receiverId String
+  content    String
+  isActive   Boolean  @default(true)
+  createAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  sender     Medic    @relation("SentMessages", fields: [senderId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+  receiver   Medic    @relation("ReceivedMessages", fields: [receiverId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+}
