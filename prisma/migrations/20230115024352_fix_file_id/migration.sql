@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `File` MODIFY `id` INTEGER NOT NULL;

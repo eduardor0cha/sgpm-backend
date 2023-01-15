@@ -6,33 +6,33 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  cpf            String     @id
-  username       String     @unique
-  email          String     @unique
-  password       String
-  name           String
-  gender         String
-  phoneNumber    String?    @unique
-  street         String?
-  number         String?
-  postalCode     String
-  district       String?
-  stateId        Int
-  state          String
-  stateAcronym   String
-  cityId         Int
-  city           String
-  profilePicPath String
-  isActive       Boolean    @default(true)
-  createAt       DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  medic          Medic?
-  moderador      Moderator?
+  cpf          String     @id
+  username     String     @unique
+  email        String     @unique
+  password     String
+  name         String
+  gender       String
+  phoneNumber  String?    @unique
+  street       String?
+  number       String?
+  postalCode   String
+  district     String?
+  stateId      Int
+  state        String
+  stateAcronym String
+  cityId       Int
+  city         String
+  profilePic   String?
+  isActive     Boolean    @default(true)
+  createAt     DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  medic        Medic?
+  moderador    Moderator?
 }
 
 model Moderator {
@@ -116,4 +116,14 @@ model Message {
   updatedAt  DateTime @updatedAt
   sender     Medic    @relation("SentMessages", fields: [senderId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
   receiver   Medic    @relation("ReceivedMessages", fields: [receiverId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model File {
+  id          String   @id
+  filename    String
+  bytes       Bytes
+  contentType String
+  size        Int
+  createAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
