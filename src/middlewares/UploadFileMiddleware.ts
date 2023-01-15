@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import multer from "multer";
+import { ErrorResponse, handleErrors } from "../utils/HandleErrorsUtils";
 import { removeSpaces, removeSpecialChars } from "../utils/StringUtils";
 
 const storage = multer.memoryStorage();
@@ -42,6 +43,10 @@ export const uploadSingleFile = async (
     res.locals.fileId = fileId;
     next();
   } catch (error) {
+    const response: ErrorResponse | null = handleErrors(error);
+    if (response)
+      return res.status(response.code).send({ message: response.message });
+
     return res.status(500).send({ message: "Something went wrong." });
   }
 };

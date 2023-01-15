@@ -33,6 +33,10 @@ model User {
   updatedAt    DateTime   @updatedAt
   medic        Medic?
   moderador    Moderator?
+
+  @@unique([cpf, isActive])
+  @@unique([username, isActive])
+  @@unique([email, isActive])
 }
 
 model Moderator {
@@ -91,6 +95,8 @@ model Publication {
   updatedAt DateTime @updatedAt
   post      Post?
   reply     Reply?
+
+  @@unique([id, isActive])
 }
 
 model Post {
@@ -116,6 +122,8 @@ model Message {
   updatedAt  DateTime @updatedAt
   sender     Medic    @relation("SentMessages", fields: [senderId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
   receiver   Medic    @relation("ReceivedMessages", fields: [receiverId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([id, isActive])
 }
 
 model File {
@@ -124,6 +132,9 @@ model File {
   bytes       Bytes
   contentType String
   size        Int
+  isActive    Boolean  @default(true)
   createAt    DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@unique([id, isActive])
 }

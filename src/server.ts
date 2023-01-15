@@ -2,7 +2,7 @@ import "dotenv";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { FileRoutes } from "./routes";
+import routes from "./routes";
 
 const app = express();
 
@@ -17,6 +17,6 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use("/files", FileRoutes);
+app.use(routes);
 
 app.listen(process.env.PORT || 3330);
