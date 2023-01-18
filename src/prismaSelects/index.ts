@@ -34,6 +34,7 @@ export const userSelect: Prisma.UserSelect = {
   state: true,
   stateAcronym: true,
   cityId: true,
+  city: true,
   profilePic: true,
   isActive: false,
   createAt: true,
