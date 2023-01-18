@@ -1,18 +1,25 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { deleteFile, getFile } from "../controllers/FileController";
-import {
-  storeEngine,
-  uploadSingleFile,
-} from "../middlewares/UploadFileMiddleware";
+import AuthMiddleware from "../middlewares/AuthMiddleware";
+import { uploadSingleFile } from "../middlewares/UploadFileMiddleware";
 import { ErrorResponse, handleErrors } from "../utils/HandleErrorsUtils";
 
 const router = express.Router();
 
+router.use(AuthMiddleware({ allowedRoles: "all" }));
+
+router.get("/:fileId", getFile);
+
+router.use(AuthMiddleware({ allowedRoles: ["moderator"] }));
+
 router.post(
   "/upload",
-  storeEngine.single("profilePic"),
-  uploadSingleFile,
-  (req, res) => {
+  uploadSingleFile({
+    fieldName: "file",
+    required: true,
+    maxSize: 5242880,
+  }),
+  (req: Request, res: Response) => {
     try {
       return res.status(200).send({ fileId: req.res?.locals.fileId });
     } catch (error) {
@@ -24,8 +31,6 @@ router.post(
     }
   }
 );
-
-router.get("/:fileId", getFile);
 
 router.delete("/:fileId", deleteFile);
 

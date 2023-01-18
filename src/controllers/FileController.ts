@@ -8,7 +8,7 @@ export const getFile = async (req: Request, res: Response) => {
   try {
     const { fileId } = req.params;
 
-    const file = await prisma.file.findUnique({
+    const file = await prisma.file.findUniqueOrThrow({
       where: {
         id_isActive: {
           id: fileId,
@@ -16,8 +16,6 @@ export const getFile = async (req: Request, res: Response) => {
         },
       },
     });
-
-    if (!file) return res.status(400).send({ message: "File not found" });
 
     res.writeHead(200, {
       "Content-Type": file.contentType,
@@ -50,7 +48,7 @@ export const deleteFile = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).send("File deleted successfully.");
+    return res.status(200).send({ message: "File deleted successfully." });
   } catch (error) {
     const response: ErrorResponse | null = handleErrors(error);
     if (response)

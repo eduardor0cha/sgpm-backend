@@ -17,6 +17,7 @@ model User {
   password     String
   name         String
   gender       String
+  role         String
   phoneNumber  String?    @unique
   street       String?
   number       String?
@@ -32,7 +33,7 @@ model User {
   createAt     DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   medic        Medic?
-  moderador    Moderator?
+  moderator    Moderator?
 
   @@unique([cpf, isActive])
   @@unique([username, isActive])
@@ -53,7 +54,7 @@ model Medic {
   swapRequests     SwapRequest[] @relation("SwapRequests")
   receivedSwapReqs SwapRequest[] @relation("ReceivedSwapReqs")
   sentMessages     Message[]     @relation("SentMessages")
-  receiverMessages Message[]     @relation("ReceivedMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
 }
 
 model Duty {
