@@ -1,10 +1,15 @@
 import { Request, Response } from "express";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { ErrorResponse, handleErrors } from "../utils/HandleErrorsUtils";
-import { userSelect } from "../prismaSelects";
+import { userSelect } from "../domain/types/PrismaSelects";
 import bcrypt from "bcrypt";
-import { AuthCustomRequest } from "../middlewares/AuthMiddleware";
 import { findCityById } from "../services/IBGE/IBGEAPI";
+import { AuthCustomRequest } from "../domain/types/Auth";
+import {
+  getUniqueAccountConfirmationToken,
+  getUniqueEmailResetToken,
+} from "../utils/AuthUtils";
+import { sendConfirmationEmail } from "../utils/EmailSender";
 
 const prisma = new PrismaClient();
 
@@ -65,7 +70,6 @@ export const updateUser = async (req: Request, res: Response) => {
       },
       data: {
         username: username,
-        email: email,
         name: name,
         phoneNumber: phoneNumber,
         street: street,
@@ -77,6 +81,28 @@ export const updateUser = async (req: Request, res: Response) => {
       },
       select: userSelect,
     });
+
+    if (email) {
+      const emailResetToken = await getUniqueEmailResetToken({
+        userId: cpf,
+        days: 7,
+        email: email,
+      });
+
+      const uniqueEmailResetToken = await prisma.emailResetToken.create({
+        data: emailResetToken,
+      });
+
+      if (!user.name) throw Error;
+
+      await sendConfirmationEmail({
+        token: uniqueEmailResetToken.token,
+        userFullName: user.name,
+        email: email,
+        days: 7,
+        type: "emailReset",
+      });
+    }
 
     return res.status(200).send(user);
   } catch (error) {
@@ -136,6 +162,11 @@ export const createUser = async (req: Request, res: Response) => {
 
     const encryptedPw = await bcrypt.hash(password, 10);
 
+    const confirmAccountToken = await getUniqueAccountConfirmationToken({
+      userId: cpf,
+      days: 7,
+    });
+
     const user = await prisma.user.create({
       data: {
         cpf: cpf,
@@ -157,12 +188,27 @@ export const createUser = async (req: Request, res: Response) => {
         stateAcronym: city.stateAcronym,
         medic: medicData,
         moderator: moderatorData,
+        confirmAccountToken: {
+          create: confirmAccountToken,
+        },
       },
       select: userSelect,
     });
 
+    if (!user.email) throw Error;
+    if (!user.name) throw Error;
+
+    await sendConfirmationEmail({
+      token: confirmAccountToken.token,
+      userFullName: user.name,
+      email: user.email,
+      days: 7,
+      type: "accountConfirmation",
+    });
+
     return res.status(200).send(user);
   } catch (error) {
+    console.log(error);
     const response: ErrorResponse | null = handleErrors(error);
     if (response)
       return res.status(response.code).send({ message: response.message });

@@ -1,16 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
-
-type UserRoles = "moderator" | "medic";
+import { AuthCustomRequest, UserRoles } from "../domain/types/Auth";
 
 type Props = {
   allowedRoles: "all" | UserRoles[];
 };
-
-export interface AuthCustomRequest extends Request {
-  userId: string | JwtPayload;
-  userRole: string | JwtPayload;
-}
 
 export default ({ allowedRoles }: Props) => {
   return (req: Request, res: Response, next: NextFunction) => {

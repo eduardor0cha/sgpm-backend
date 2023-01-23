@@ -6,14 +6,11 @@ import { ErrorResponse, handleErrors } from "../utils/HandleErrorsUtils";
 
 const router = express.Router();
 
-router.use(AuthMiddleware({ allowedRoles: "all" }));
-
-router.get("/:fileId", getFile);
-
-router.use(AuthMiddleware({ allowedRoles: ["moderator"] }));
+router.get("/:fileId", AuthMiddleware({ allowedRoles: "all" }), getFile);
 
 router.post(
   "/upload",
+  AuthMiddleware({ allowedRoles: ["moderator"] }),
   uploadSingleFile({
     fieldName: "file",
     required: true,
@@ -32,6 +29,10 @@ router.post(
   }
 );
 
-router.delete("/:fileId", deleteFile);
+router.delete(
+  "/:fileId",
+  AuthMiddleware({ allowedRoles: ["moderator"] }),
+  deleteFile
+);
 
 export default router;

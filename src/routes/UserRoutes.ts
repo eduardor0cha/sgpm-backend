@@ -9,10 +9,9 @@ import { uploadSingleFile } from "../middlewares/UploadFileMiddleware";
 
 const router = express.Router();
 
-router.use(AuthMiddleware({ allowedRoles: "all" }));
-
 router.put(
   "/:cpf",
+  AuthMiddleware({ allowedRoles: "all" }),
   uploadSingleFile({
     fieldName: "profilePic",
     required: false,
@@ -21,10 +20,16 @@ router.put(
   updateUser
 );
 
-router.use(AuthMiddleware({ allowedRoles: ["moderator"] }));
+router.post(
+  "/create",
+  AuthMiddleware({ allowedRoles: ["moderator"] }),
+  createUser
+);
 
-router.post("/create", createUser);
-
-router.delete("/:cpf", deleteUser);
+router.delete(
+  "/:cpf",
+  AuthMiddleware({ allowedRoles: ["moderator"] }),
+  deleteUser
+);
 
 export default router;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import City from "../../models/City";
+import City from "../../domain/models/City";
 
 const APIClient = axios.create({
   baseURL: "http://servicodados.ibge.gov.br/api/v1",

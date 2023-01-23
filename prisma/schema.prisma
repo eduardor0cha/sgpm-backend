@@ -11,29 +11,33 @@ datasource db {
 }
 
 model User {
-  cpf          String     @id
-  username     String     @unique
-  email        String     @unique
-  password     String
-  name         String
-  gender       String
-  role         String
-  phoneNumber  String?    @unique
-  street       String?
-  number       String?
-  postalCode   String
-  district     String?
-  stateId      Int
-  state        String
-  stateAcronym String
-  cityId       Int
-  city         String
-  profilePic   String?
-  isActive     Boolean    @default(true)
-  createAt     DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  medic        Medic?
-  moderator    Moderator?
+  cpf                 String                    @id
+  username            String                    @unique
+  email               String                    @unique
+  password            String
+  name                String
+  gender              String
+  role                String
+  phoneNumber         String?                   @unique
+  street              String?
+  number              String?
+  postalCode          String
+  district            String?
+  stateId             Int
+  state               String
+  stateAcronym        String
+  cityId              Int
+  city                String
+  profilePic          String?
+  confirmedAccount    Boolean                   @default(false)
+  isActive            Boolean                   @default(true)
+  createAt            DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  medic               Medic?
+  moderator           Moderator?
+  confirmAccountToken AccountConfirmationToken?
+  resetPasswordToken  PasswordResetToken?
+  resetEmailToken     EmailResetToken?
 
   @@unique([cpf, isActive])
   @@unique([username, isActive])
@@ -138,4 +142,32 @@ model File {
   updatedAt   DateTime @updatedAt
 
   @@unique([id, isActive])
+}
+
+model AccountConfirmationToken {
+  userId    String   @id
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [cpf], onDelete: Cascade, onUpdate: Cascade)
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+}
+
+model PasswordResetToken {
+  userId    String   @id
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [cpf], onDelete: Cascade, onUpdate: Cascade)
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+}
+
+model EmailResetToken {
+  userId    String   @id
+  token     String   @unique
+  email     String
+  user      User     @relation(fields: [userId], references: [cpf], onDelete: Cascade, onUpdate: Cascade)
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
 }
