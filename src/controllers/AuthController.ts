@@ -83,6 +83,48 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const checkToken = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req as AuthCustomRequest;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        cpf_isActive: {
+          cpf: String(userId),
+          isActive: true,
+        },
+      },
+    });
+
+    if (!user) return res.status(400).send({ message: "User not found." });
+
+    if (!user.confirmedAccount) {
+      return res.status(400).send({
+        message: "Account is not confirmed yet.",
+        confirmedAccount: false,
+      });
+    }
+
+    const response = await prisma.user.findUnique({
+      where: {
+        cpf_isActive: {
+          cpf: String(userId),
+          isActive: true,
+        },
+      },
+      select: userSelect,
+    });
+
+    return res.status(200).send(response);
+  } catch (error) {
+    const response: ErrorResponse | null = handleErrors(error);
+    if (response)
+      return res.status(response.code).send({ message: response.message });
+
+    return res.status(500).send({ message: "Something went wrong." });
+  }
+};
+
 export const requireConfirmAccount = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;

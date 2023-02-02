@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  checkToken,
   confirmAccount,
   login,
   requireConfirmAccount,
@@ -13,6 +14,12 @@ import AuthMiddleware from "../middlewares/AuthMiddleware";
 const router = express.Router();
 
 router.post("/login", login);
+
+router.post(
+  "/login/token",
+  AuthMiddleware({ allowedRoles: "all" }),
+  checkToken
+);
 
 router.post("/confirm-account/", confirmAccount);
 
