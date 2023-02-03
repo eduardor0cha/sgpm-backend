@@ -15,11 +15,7 @@ const router = express.Router();
 
 router.post("/login", login);
 
-router.post(
-  "/login/token",
-  AuthMiddleware({ allowedRoles: "all" }),
-  checkToken
-);
+router.post("/login/token", checkToken);
 
 router.post("/confirm-account/", confirmAccount);
 

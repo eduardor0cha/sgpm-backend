@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { ErrorResponse, handleErrors } from "../utils/HandleErrorsUtils";
 import bcrypt from "bcrypt";
 import { userSelect } from "../domain/types/PrismaSelects";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import {
   getUniqueAccountConfirmationToken,
   getUniqueEmailResetToken,
@@ -85,37 +85,49 @@ export const login = async (req: Request, res: Response) => {
 
 export const checkToken = async (req: Request, res: Response) => {
   try {
-    const { userId } = req as AuthCustomRequest;
+    const { token } = req.body;
 
-    const user = await prisma.user.findUnique({
-      where: {
-        cpf_isActive: {
-          cpf: String(userId),
-          isActive: true,
-        },
-      },
-    });
+    jwt.verify(
+      token,
+      process.env.JWT_KEY as Secret,
+      async (
+        err: jwt.VerifyErrors | null,
+        decoded: string | jwt.JwtPayload | undefined
+      ) => {
+        if (err) return res.status(200).send({ isValid: false });
 
-    if (!user) return res.status(400).send({ message: "User not found." });
+        if (!decoded) throw Error;
 
-    if (!user.confirmedAccount) {
-      return res.status(400).send({
-        message: "Account is not confirmed yet.",
-        confirmedAccount: false,
-      });
-    }
+        const userId = (decoded as JwtPayload)["cpf"];
 
-    const response = await prisma.user.findUnique({
-      where: {
-        cpf_isActive: {
-          cpf: String(userId),
-          isActive: true,
-        },
-      },
-      select: userSelect,
-    });
+        const user = await prisma.user.findUnique({
+          where: {
+            cpf_isActive: {
+              cpf: String(userId),
+              isActive: true,
+            },
+          },
+        });
 
-    return res.status(200).send(response);
+        if (!user) return res.status(200).send({ isValid: false });
+
+        if (!user.confirmedAccount) {
+          return res.status(200).send({ isValid: false });
+        }
+
+        const response = await prisma.user.findUnique({
+          where: {
+            cpf_isActive: {
+              cpf: String(userId),
+              isActive: true,
+            },
+          },
+          select: userSelect,
+        });
+
+        return res.status(200).send({ isValid: true, user: response });
+      }
+    );
   } catch (error) {
     const response: ErrorResponse | null = handleErrors(error);
     if (response)
