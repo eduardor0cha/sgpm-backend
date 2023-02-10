@@ -6,7 +6,7 @@ import { ErrorResponse, handleErrors } from "../utils/HandleErrorsUtils";
 
 const router = express.Router();
 
-router.get("/:fileId", AuthMiddleware({ allowedRoles: "all" }), getFile);
+router.get("/:fileId", getFile);
 
 router.post(
   "/upload",
