@@ -8,6 +8,7 @@ import {
   requirePasswordReset,
   resetEmail,
   resetPassword,
+  updatePassword,
 } from "../controllers/AuthController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
 
@@ -35,6 +36,12 @@ router.post(
   "/require-confirm-account",
   AuthMiddleware({ allowedRoles: ["moderator"] }),
   requireConfirmAccount
+);
+
+router.post(
+  "/update-password",
+  AuthMiddleware({ allowedRoles: "all" }),
+  updatePassword
 );
 
 export default router;

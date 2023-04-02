@@ -420,3 +420,57 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(500).send({ message: "Something went wrong." });
   }
 };
+
+export const updatePassword = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req as AuthCustomRequest;
+
+    const { password, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        cpf_isActive: {
+          cpf: userId.toString(),
+          isActive: true,
+        },
+      },
+    });
+
+    if (!user) return res.status(400).send({ message: "User not found." });
+
+    if (!user.confirmedAccount) {
+      return res.status(400).send({
+        message: "Account is not confirmed yet.",
+        confirmedAccount: false,
+      });
+    }
+
+    if (!(await bcrypt.compare(password, user.password)))
+      return res.status(400).send({ message: "Incorrect current password." });
+
+    const encryptedPw = await bcrypt.hash(newPassword, 10);
+
+    const response = await prisma.user.update({
+      where: {
+        cpf_isActive: {
+          cpf: userId.toString(),
+          isActive: true,
+        },
+      },
+      data: {
+        password: encryptedPw,
+      },
+    });
+
+    if (!response)
+      return res.status(400).send({ message: "Something went wrong." });
+
+    return res.status(200).send({ message: "Password updated successfully." });
+  } catch (error) {
+    const response: ErrorResponse | null = handleErrors(error);
+    if (response)
+      return res.status(response.code).send({ message: response.message });
+
+    return res.status(500).send({ message: "Something went wrong." });
+  }
+};
