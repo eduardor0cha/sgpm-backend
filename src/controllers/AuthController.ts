@@ -379,7 +379,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { token, password } = req.body;
 
-    if (!password)
+    if (!password || password === "")
       return res.status(400).send({ message: "New password not provided." });
 
     const passwordResetToken = await prisma.passwordResetToken.findUnique({
@@ -426,6 +426,9 @@ export const updatePassword = async (req: Request, res: Response) => {
     const { userId } = req as AuthCustomRequest;
 
     const { password, newPassword } = req.body;
+
+    if (!newPassword || newPassword === "")
+      return res.status(400).send({ message: "New password not provided." });
 
     const user = await prisma.user.findUnique({
       where: {

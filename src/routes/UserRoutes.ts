@@ -2,6 +2,7 @@ import express from "express";
 import {
   createUser,
   deleteUser,
+  findUserById,
   updateUser,
 } from "../controllers/UserController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
@@ -31,5 +32,7 @@ router.delete(
   AuthMiddleware({ allowedRoles: ["moderator"] }),
   deleteUser
 );
+
+router.get("/:cpf", AuthMiddleware({ allowedRoles: "all" }), findUserById);
 
 export default router;

@@ -208,7 +208,32 @@ export const createUser = async (req: Request, res: Response) => {
 
     return res.status(200).send(user);
   } catch (error) {
-    console.log(error);
+    const response: ErrorResponse | null = handleErrors(error);
+    if (response)
+      return res.status(response.code).send({ message: response.message });
+
+    return res.status(500).send({ message: "Something went wrong." });
+  }
+};
+
+export const findUserById = async (req: Request, res: Response) => {
+  try {
+    const { cpf } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        cpf_isActive: {
+          cpf: cpf,
+          isActive: true,
+        },
+      },
+      select: userSelect,
+    });
+
+    if (!user) return res.status(400).send({ message: "User not found." });
+
+    return res.status(200).send(user);
+  } catch (error) {
     const response: ErrorResponse | null = handleErrors(error);
     if (response)
       return res.status(response.code).send({ message: response.message });
