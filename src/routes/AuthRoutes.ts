@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  checkConfirmAccountToken,
   checkToken,
   confirmAccount,
   login,
@@ -43,5 +44,7 @@ router.post(
   AuthMiddleware({ allowedRoles: "all" }),
   updatePassword
 );
+
+router.post("/confirm-account/token", checkConfirmAccountToken);
 
 export default router;

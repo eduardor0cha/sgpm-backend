@@ -477,3 +477,27 @@ export const updatePassword = async (req: Request, res: Response) => {
     return res.status(500).send({ message: "Something went wrong." });
   }
 };
+
+export const checkConfirmAccountToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+
+    const accountConfirmationToken =
+      await prisma.accountConfirmationToken.findUnique({
+        where: {
+          token: token,
+        },
+      });
+
+    if (!accountConfirmationToken)
+      return res.status(400).send({ message: "Token not valid." });
+
+    return res.status(200).send({ message: "Token still valid." });
+  } catch (error) {
+    const response: ErrorResponse | null = handleErrors(error);
+    if (response)
+      return res.status(response.code).send({ message: response.message });
+
+    return res.status(500).send({ message: "Something went wrong." });
+  }
+};

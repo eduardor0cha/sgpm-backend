@@ -189,7 +189,12 @@ export const createUser = async (req: Request, res: Response) => {
         medic: medicData,
         moderator: moderatorData,
         confirmAccountToken: {
-          create: confirmAccountToken,
+          create: {
+            token: confirmAccountToken.token,
+            createAt: confirmAccountToken.createAt,
+            updatedAt: confirmAccountToken.updatedAt,
+            expiresAt: confirmAccountToken.expiresAt,
+          },
         },
       },
       select: userSelect,
