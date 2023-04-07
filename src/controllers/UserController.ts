@@ -10,6 +10,7 @@ import {
   getUniqueEmailResetToken,
 } from "../utils/AuthUtils";
 import { sendConfirmationEmail } from "../utils/EmailSender";
+import City from "../domain/models/City";
 
 const prisma = new PrismaClient();
 
@@ -61,6 +62,11 @@ export const updateUser = async (req: Request, res: Response) => {
       cityId,
     } = req.body;
 
+    let city: City | undefined;
+    if (cityId) {
+      city = await findCityById(Number(cityId));
+    }
+
     const user = await prisma.user.update({
       where: {
         cpf_isActive: {
@@ -76,7 +82,11 @@ export const updateUser = async (req: Request, res: Response) => {
         number: number,
         postalCode: postalCode,
         district: district,
-        cityId: cityId ? Number(cityId) : undefined,
+        cityId: city ? city.id : undefined,
+        city: city ? city.name : undefined,
+        stateId: city ? city.stateId : undefined,
+        state: city ? city.state : undefined,
+        stateAcronym: city ? city.stateAcronym : undefined,
         profilePic: fileId,
       },
       select: userSelect,
